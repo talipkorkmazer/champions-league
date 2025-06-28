@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: champions_league_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: champions_league
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_USER: champions
+      MYSQL_PASSWORD: champions
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - champions_league_network
+
+volumes:
+  mysql_data:
+    driver: local
+
+networks:
+  champions_league_network:
+    driver: bridge 
