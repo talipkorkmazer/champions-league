@@ -1,0 +1,1 @@
+export type LeagueStatus = 'not_started' | 'in_progress' | 'completed' 
