@@ -2,6 +2,8 @@
 
 namespace App\Services\Interfaces;
 
+use App\Models\League;
+
 /**
  * Interface for prediction service operations
  */
@@ -35,4 +37,12 @@ interface PredictionServiceInterface
      * @return array Array of standings with championship percentages
      */
     public function calculateChampionshipPercentages(array $standings, int $leagueId, int $currentWeek): array;
+
+    /**
+     * Calculate predictions for a league
+     *
+     * @param League $league The league to calculate predictions for
+     * @return void
+     */
+    public function calculatePredictions(League $league): void;
 }

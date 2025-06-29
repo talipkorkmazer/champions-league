@@ -5,7 +5,13 @@ return [
     'teams_per_league' => env('LEAGUE_TEAMS_PER_LEAGUE', 4),
     'prediction_weeks_threshold' => env('LEAGUE_PREDICTION_WEEKS_THRESHOLD', 3),
     'matches_per_week' => env('LEAGUE_MATCHES_PER_WEEK', 2),
-    
+
+    // Prediction constants
+    'min_week_for_predictions' => env('LEAGUE_MIN_WEEK_FOR_PREDICTIONS', 4),
+    'points_weight' => env('LEAGUE_POINTS_WEIGHT', 0.7),
+    'goals_for_weight' => env('LEAGUE_GOALS_FOR_WEIGHT', 0.2),
+    'goals_against_weight' => env('LEAGUE_GOALS_AGAINST_WEIGHT', 0.1),
+
     // Simulation constants
     'points_for_win' => env('LEAGUE_POINTS_FOR_WIN', 3),
     'points_for_draw' => env('LEAGUE_POINTS_FOR_DRAW', 1),
@@ -34,4 +40,4 @@ return [
     'strength_weight' => env('LEAGUE_STRENGTH_WEIGHT', 0.6),
     'position_weight' => env('LEAGUE_POSITION_WEIGHT', 0.4),
     'monte_carlo_simulations' => env('LEAGUE_MONTE_CARLO_SIMULATIONS', 2000),
-]; 
+];

@@ -7,6 +7,7 @@ use App\Services\SimulationService;
 use App\Models\League;
 use App\Models\Team;
 use App\Models\LeagueMatch;
+use App\Services\PredictionService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Mockery;
 
@@ -19,7 +20,7 @@ class SimulationServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->simulationService = new SimulationService();
+        $this->simulationService = new SimulationService(app(PredictionService::class));
     }
 
     public function test_simulate_week_successfully()

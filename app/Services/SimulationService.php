@@ -12,6 +12,10 @@ use App\Services\Interfaces\SimulationServiceInterface;
  */
 class SimulationService implements SimulationServiceInterface
 {
+    public function __construct(
+        private readonly PredictionService $predictionService
+    ) {}
+
     /**
      * Simulate all matches for the next week in a league
      *
@@ -38,7 +42,9 @@ class SimulationService implements SimulationServiceInterface
 
         $league->update(['current_week' => $currentWeek]);
 
-        $this->calculatePredictions($league);
+        if ($currentWeek >= config('league.min_week_for_predictions')) {
+            $this->predictionService->calculatePredictions($league);
+        }
     }
 
     /**
@@ -62,7 +68,7 @@ class SimulationService implements SimulationServiceInterface
 
             $league->update(['current_week' => $week]);
 
-            $this->calculatePredictions($league);
+            $this->predictionService->calculatePredictions($league);
         }
     }
 
@@ -141,16 +147,5 @@ class SimulationService implements SimulationServiceInterface
             return 6;
 
         return 7;
-    }
-
-    /**
-     * Calculate predictions for the league based on current standings
-     *
-     * @param League $league The league to calculate predictions for
-     * @return void
-     */
-    public function calculatePredictions(League $league): void
-    {
-        // TODO: Implement calculatePredictions() method.
     }
 }

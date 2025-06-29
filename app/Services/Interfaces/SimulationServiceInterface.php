@@ -33,12 +33,4 @@ interface SimulationServiceInterface
      * @return void
      */
     public function simulateMatch(LeagueMatch $match): void;
-    
-    /**
-     * Calculate predictions for the league based on current standings
-     *
-     * @param League $league The league to calculate predictions for
-     * @return void
-     */
-    public function calculatePredictions(League $league): void;
 } 
