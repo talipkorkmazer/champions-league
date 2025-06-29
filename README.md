@@ -12,6 +12,10 @@ A Laravel-based application for managing and simulating football leagues with te
 - Modern Vue.js frontend with Inertia.js
 - Responsive design with Tailwind CSS
 
+## Live Application
+
+The application is live and accessible at: **https://talipcankorkmazer.com**
+
 ## Local Development Setup
 
 ### Prerequisites
