@@ -21,7 +21,7 @@ class SimulationService implements SimulationServiceInterface
     public function simulateWeek(League $league): void
     {
         $currentWeek = $league->current_week + 1;
-        
+
         if ($currentWeek > config('league.total_weeks')) {
             return;
         }
@@ -88,28 +88,59 @@ class SimulationService implements SimulationServiceInterface
         $homeFinalStrength = $homeStrength * $homeRandomFactor;
         $awayFinalStrength = $awayStrength * $awayRandomFactor;
 
-        $strengthDiff = $homeFinalStrength - $awayFinalStrength;
-        
-        $homeGoals = max(0, min(config('league.base_goals_max'), round(($homeFinalStrength / 100) * config('league.base_goals_max'))));
-        $awayGoals = max(0, min(config('league.base_goals_max'), round(($awayFinalStrength / 100) * config('league.base_goals_max'))));
+        $homeGoalProbability = min(config('league.max_goal_probability'), ($homeFinalStrength / 100) * config('league.strength_to_goal_multiplier'));
+        $awayGoalProbability = min(config('league.max_goal_probability'), ($awayFinalStrength / 100) * config('league.strength_to_goal_multiplier'));
 
+        $homeGoals = $this->generateRealisticGoals($homeGoalProbability);
+        $awayGoals = $this->generateRealisticGoals($awayGoalProbability);
+
+        $strengthDiff = $homeFinalStrength - $awayFinalStrength;
         if ($strengthDiff > config('league.strength_difference_threshold')) {
-            $homeGoals = min(config('league.base_goals_max') + 1, $homeGoals + 1);
+            $homeGoals = min(config('league.max_goals_bonus'), $homeGoals + (rand(0, config('league.strength_bonus_range'))));
         } elseif ($strengthDiff < -config('league.strength_difference_threshold')) {
-            $awayGoals = min(config('league.base_goals_max') + 1, $awayGoals + 1);
+            $awayGoals = min(config('league.max_goals_bonus'), $awayGoals + (rand(0, config('league.strength_bonus_range'))));
         }
 
         $homeGoals += rand(-config('league.goal_randomness_range'), config('league.goal_randomness_range'));
         $awayGoals += rand(-config('league.goal_randomness_range'), config('league.goal_randomness_range'));
 
-        $homeGoals = max(0, $homeGoals);
-        $awayGoals = max(0, $awayGoals);
+        $homeGoals = max(0, min(config('league.base_goals_max'), $homeGoals));
+        $awayGoals = max(0, min(config('league.base_goals_max'), $awayGoals));
 
         $match->update([
             'home_score' => $homeGoals,
             'away_score' => $awayGoals,
             'is_played' => true
         ]);
+    }
+
+    /**
+     * Generate realistic number of goals based on probability
+     *
+     * @param float $probability Goal probability (0-1)
+     * @return int Number of goals
+     */
+    private function generateRealisticGoals(float $probability): int
+    {
+        $value = rand(1, 100) * $probability;
+        $distribution = config('league.goal_distribution');
+
+        if ($value <= $distribution['zero_goals_threshold'])
+            return 0;
+        if ($value <= $distribution['one_goal_threshold'])
+            return 1;
+        if ($value <= $distribution['two_goals_threshold'])
+            return 2;
+        if ($value <= $distribution['three_goals_threshold'])
+            return 3;
+        if ($value <= $distribution['four_goals_threshold'])
+            return 4;
+        if ($value <= $distribution['five_goals_threshold'])
+            return 5;
+        if ($value <= $distribution['six_goals_threshold'])
+            return 6;
+
+        return 7;
     }
 
     /**
@@ -122,4 +153,4 @@ class SimulationService implements SimulationServiceInterface
     {
         // TODO: Implement calculatePredictions() method.
     }
-} 
+}
