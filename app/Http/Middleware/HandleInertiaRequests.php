@@ -39,12 +39,17 @@ class HandleInertiaRequests extends Middleware
     {
         [$message, $author] = str(Inspiring::quotes()->random())->explode('-');
 
+        $ziggy = new Ziggy();
+        if (app()->environment('production')) {
+            $ziggy->setUrl(config('app.url'));
+        }
+
         return [
             ...parent::share($request),
             'name' => config('app.name'),
             'quote' => ['message' => trim($message), 'author' => trim($author)],
             'ziggy' => [
-                ...(new Ziggy)->toArray(),
+                ...$ziggy->toArray(),
                 'location' => $request->url(),
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
