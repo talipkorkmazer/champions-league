@@ -87,7 +87,6 @@ class LeagueController extends Controller
     {
         $data = $this->leagueService->getLeagueWithStandings($league);
 
-        // Add utility data as separate field
         $data['leagueUtility'] = $this->leagueService->getLeagueUtilityData($league)->toArray();
 
         return Inertia::render('Leagues/Show', $data);

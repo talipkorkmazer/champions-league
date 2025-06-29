@@ -82,13 +82,13 @@ class StandingService implements StandingServiceInterface
     {
         foreach ($team->matchesAsHome as $match) {
             if ($match->league_id === $leagueId && $match->is_played) {
-                $teamStats->addMatchResult($match->home_score, $match->away_score, true);
+                $teamStats->addMatchResult($match->home_score, $match->away_score);
             }
         }
 
         foreach ($team->matchesAsAway as $match) {
             if ($match->league_id === $leagueId && $match->is_played) {
-                $teamStats->addMatchResult($match->away_score, $match->home_score, false);
+                $teamStats->addMatchResult($match->away_score, $match->home_score);
             }
         }
     }

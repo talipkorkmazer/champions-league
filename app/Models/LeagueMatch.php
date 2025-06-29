@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 /**
  * LeagueMatch model representing a match in a league
@@ -21,6 +22,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class LeagueMatch extends Model
 {
+    use HasFactory;
+
     /**
      * The attributes that are mass assignable.
      *

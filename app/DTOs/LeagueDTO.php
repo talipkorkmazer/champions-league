@@ -31,4 +31,17 @@ class LeagueDTO
     {
         return new self($request->name, $request->team_ids);
     }
+
+    /**
+     * Convert the DTO to an array representation
+     *
+     * @return array Array representation of the league data
+     */
+    public function toArray(): array
+    {
+        return [
+            'name' => $this->name,
+            'teamIds' => $this->teamIds,
+        ];
+    }
 }

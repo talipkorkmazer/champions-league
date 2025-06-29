@@ -64,22 +64,16 @@ class TeamStatsDTO
      *
      * @param int $goalsFor Goals scored by the team
      * @param int $goalsAgainst Goals conceded by the team
-     * @param bool $isHomeMatch Whether this was a home match
      * @return void
      */
-    public function addMatchResult(int $goalsFor, int $goalsAgainst, bool $isHomeMatch): void
+    public function addMatchResult(int $goalsFor, int $goalsAgainst): void
     {
         $this->played++;
 
-        if ($isHomeMatch) {
-            $this->goalsFor += $goalsFor;
-            $this->goalsAgainst += $goalsAgainst;
-        } else {
-            $this->goalsFor += $goalsAgainst;
-            $this->goalsAgainst += $goalsFor;
-        }
+        $this->goalsFor += $goalsFor;
+        $this->goalsAgainst += $goalsAgainst;
 
-        $this->updateMatchStats($goalsFor, $goalsAgainst, $isHomeMatch);
+        $this->updateMatchStats($goalsFor, $goalsAgainst);
     }
 
     /**
@@ -87,17 +81,13 @@ class TeamStatsDTO
      *
      * @param int $teamGoals Goals scored by the team
      * @param int $opponentGoals Goals scored by the opponent
-     * @param bool $isHomeMatch Whether this was a home match
      * @return void
      */
-    private function updateMatchStats(int $teamGoals, int $opponentGoals, bool $isHomeMatch): void
+    private function updateMatchStats(int $teamGoals, int $opponentGoals): void
     {
-        $actualTeamGoals = $isHomeMatch ? $teamGoals : $opponentGoals;
-        $actualOpponentGoals = $isHomeMatch ? $opponentGoals : $teamGoals;
-
-        if ($actualTeamGoals > $actualOpponentGoals) {
+        if ($teamGoals > $opponentGoals) {
             $this->won++;
-        } elseif ($actualTeamGoals === $actualOpponentGoals) {
+        } elseif ($teamGoals === $opponentGoals) {
             $this->drawn++;
         } else {
             $this->lost++;

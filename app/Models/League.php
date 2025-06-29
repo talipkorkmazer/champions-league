@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 /**
  * League model representing a football league
@@ -17,6 +18,8 @@ use Illuminate\Database\Eloquent\Model;
  */
 class League extends Model
 {
+    use HasFactory;
+
     /**
      * The attributes that are mass assignable.
      *
@@ -31,7 +34,7 @@ class League extends Model
      */
     public function teams(): BelongsToMany
     {
-        return $this->belongsToMany(Team::class, 'league_team');
+        return $this->belongsToMany(Team::class, LeagueTeam::class);
     }
 
     /**

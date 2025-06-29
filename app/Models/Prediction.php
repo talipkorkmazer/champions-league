@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 /**
  * Prediction model representing championship predictions for teams
@@ -18,6 +19,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class Prediction extends Model
 {
+    use HasFactory;
+
     /**
      * The attributes that are mass assignable.
      *
