@@ -99,12 +99,31 @@ class PredictionService implements PredictionServiceInterface
         $totalWeeks = config('league.total_weeks');
 
         if ($league->current_week >= $totalWeeks) {
-            $maxPoints = max(array_map(fn($standing) => $standing['points'], $standings));
-            $winners = array_filter($standings, fn($standing) => $standing['points'] === $maxPoints);
+            // Sort standings using all tiebreakers: points, goal difference, goals for
+            usort($standings, function ($a, $b) {
+                if ($a['points'] !== $b['points']) {
+                    return $b['points'] - $a['points'];
+                }
+                if ($a['goal_difference'] !== $b['goal_difference']) {
+                    return $b['goal_difference'] - $a['goal_difference'];
+                }
+                return $b['goals_for'] - $a['goals_for'];
+            });
+            // Find the top team(s) after tiebreakers
+            $topStanding = $standings[0];
+            $topTeams = array_filter($standings, function ($standing) use ($topStanding) {
+                return $standing['points'] === $topStanding['points'] &&
+                       $standing['goal_difference'] === $topStanding['goal_difference'] &&
+                       $standing['goals_for'] === $topStanding['goals_for'];
+            });
             $predictions = [];
             foreach ($standings as $standing) {
                 $teamId = $standing['team']->id;
-                $predictions[$teamId] = ($standing['points'] === $maxPoints) ? 100.0 : 0.0;
+                $predictions[$teamId] = 0.0;
+            }
+            foreach ($topTeams as $standing) {
+                $teamId = $standing['team']->id;
+                $predictions[$teamId] = 100.0;
             }
             foreach ($predictions as $teamId => $percentage) {
                 Prediction::updateOrCreate(
