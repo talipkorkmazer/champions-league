@@ -4,6 +4,9 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
+/**
+ * Form request for storing a new league
+ */
 class StoreLeagueRequest extends FormRequest
 {
     /**

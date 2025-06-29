@@ -3,14 +3,14 @@
 namespace App\Services\Interfaces;
 
 use App\Models\League;
-use App\Services\DTOs\MatchDTO;
+use App\DTOs\MatchDTO;
 
 interface FixtureServiceInterface
 {
     /**
      * Generate fixtures for a league
      */
-    public function generateFixtures(League $league, array $teamIds): void;
+    public function generateFixtures(League $league, array $teamIds): array;
 
     /**
      * Generate all possible matches between teams

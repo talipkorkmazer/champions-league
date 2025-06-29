@@ -1,27 +1,19 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3'
-import { PlusIcon, PlayIcon, EyeIcon, TrophyIcon } from '@heroicons/vue/24/outline'
-import { LEAGUE_CONFIG } from '@/constants/league'
-import { useLeague } from '@/composables/useLeague'
-import type { League } from '@/types/league'
+import { PlusIcon, EyeIcon, TrophyIcon } from '@heroicons/vue/24/outline'
+import type { League, LeagueUtility } from '@/types/league'
 
 interface Props {
   leagues: League[]
+  leaguesUtility: Record<number, LeagueUtility>
 }
 
-const props = defineProps<Props>()
-
-const {
-  getStatusLabel,
-  getStatusClasses,
-  getProgressPercentage,
-} = useLeague()
+defineProps<Props>()
 </script>
 
 <template>
   <div class="min-h-screen bg-gray-50">
     <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-      <!-- Header -->
       <div class="px-4 py-6 sm:px-0">
         <div class="flex justify-between items-center">
           <div>
@@ -42,7 +34,6 @@ const {
         </div>
       </div>
 
-      <!-- Leagues Grid -->
       <div class="px-4 py-6 sm:px-0">
         <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           <div
@@ -57,20 +48,23 @@ const {
                     {{ league.name }}
                   </h3>
                   <p class="mt-1 text-sm text-gray-500">
-                    {{ league.teams.length }} teams • {{ league.current_week }}/{{ LEAGUE_CONFIG.TOTAL_WEEKS }} weeks
+                    {{ league.teams.length }} teams • {{ league.current_week }}/{{ leaguesUtility[league.id]?.totalWeeks }} weeks
                   </p>
                 </div>
                 <div class="flex flex-col items-end">
                   <span
-                    :class="getStatusClasses(league.current_week)"
+                    :class="{
+                      'bg-green-100 text-green-800': leaguesUtility[league.id]?.status === 'completed',
+                      'bg-yellow-100 text-yellow-800': leaguesUtility[league.id]?.status === 'in_progress',
+                      'bg-gray-100 text-gray-800': leaguesUtility[league.id]?.status === 'not_started'
+                    }"
                     class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
                   >
-                    {{ getStatusLabel(league.current_week) }}
+                    {{ leaguesUtility[league.id]?.statusLabel }}
                   </span>
                 </div>
               </div>
 
-              <!-- Teams -->
               <div class="mt-4">
                 <h4 class="text-sm font-medium text-gray-700 mb-2">Teams:</h4>
                 <div class="flex flex-wrap gap-1">
@@ -84,20 +78,18 @@ const {
                 </div>
               </div>
 
-              <!-- Progress -->
               <div class="mt-4">
                 <div class="flex justify-between text-sm text-gray-600 mb-1">
                   <span>Progress</span>
-                  <span>{{ getProgressPercentage(league.current_week) }}%</span>
+                  <span>{{ leaguesUtility[league.id]?.progressPercentage }}%</span>
                 </div>
-                <div class="w-full bg-gray-200 rounded-full h-2" :style="{'--progress': getProgressPercentage(league.current_week) + '%'}">
+                <div class="w-full bg-gray-200 rounded-full h-2" :style="{'--progress': leaguesUtility[league.id]?.progressPercentage + '%'}">
                   <div
                     class="bg-blue-600 h-2 rounded-full transition-all duration-300 w-[var(--progress)]"
                   ></div>
                 </div>
               </div>
 
-              <!-- Actions -->
               <div class="mt-6 flex space-x-3">
                 <Link
                   :href="route('leagues.show', league.id)"
@@ -111,7 +103,6 @@ const {
           </div>
         </div>
 
-        <!-- Empty State -->
         <div
           v-if="leagues.length === 0"
           class="text-center py-12"

@@ -5,9 +5,20 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use App\Models\Team;
 
+/**
+ * Seeder for populating the teams table with Premier League teams
+ */
 class TeamSeeder extends Seeder
 {
-    public function run()
+    /**
+     * Run the database seeds.
+     *
+     * Creates 20 Premier League teams with decreasing strength values
+     * from 100 (strongest) to 0 (weakest)
+     *
+     * @return void
+     */
+    public function run(): void
     {
         $teams = [
             'Manchester City',
@@ -32,9 +43,8 @@ class TeamSeeder extends Seeder
             'Southampton',
         ];
 
-        $count = count($teams); // 20 takım
+        $count = count($teams);
         foreach ($teams as $index => $name) {
-            // 1. takım = 100, sonuncu = 0, aralar eşit
             $strength = round(100 - ($index * (100 / ($count - 1))));
 
             Team::create([

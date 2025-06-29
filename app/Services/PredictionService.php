@@ -5,8 +5,19 @@ namespace App\Services;
 use App\Models\Prediction;
 use App\Services\Interfaces\PredictionServiceInterface;
 
+/**
+ * Service class for calculating and managing championship predictions
+ */
 class PredictionService implements PredictionServiceInterface
 {
+    /**
+     * Add predictions to standings
+     *
+     * @param array $standings Array of team standings
+     * @param int $leagueId The ID of the league
+     * @param int $currentWeek The current week number
+     * @return array Array of standings with predictions added
+     */
     public function addPredictionsToStandings(array $standings, int $leagueId, int $currentWeek): array
     {
         $predictions = $this->getPredictions($leagueId, $currentWeek);
@@ -20,6 +31,13 @@ class PredictionService implements PredictionServiceInterface
         return $standings;
     }
 
+    /**
+     * Get predictions for a league and week
+     *
+     * @param int $leagueId The ID of the league
+     * @param int $currentWeek The current week number
+     * @return array Array of predictions indexed by team ID
+     */
     public function getPredictions(int $leagueId, int $currentWeek): array
     {
         return Prediction::where('league_id', $leagueId)
@@ -30,6 +48,14 @@ class PredictionService implements PredictionServiceInterface
             ->toArray();
     }
 
+    /**
+     * Calculate championship percentages for teams
+     *
+     * @param array $standings Array of team standings
+     * @param int $leagueId The ID of the league
+     * @param int $currentWeek The current week number
+     * @return array Array of standings with championship percentages
+     */
     public function calculateChampionshipPercentages(array $standings, int $leagueId, int $currentWeek): array
     {
         $predictions = $this->getPredictions($leagueId, $currentWeek);

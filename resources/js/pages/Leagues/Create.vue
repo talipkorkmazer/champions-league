@@ -3,12 +3,15 @@ import { computed } from 'vue'
 import { useForm } from '@inertiajs/vue3'
 import { Link } from '@inertiajs/vue3'
 import { ArrowLeftIcon } from '@heroicons/vue/24/outline'
-import { LEAGUE_CONFIG } from '@/constants/league'
 import type { Team } from '@/types/league'
 import Spinner from '@/components/ui/Spinner.vue'
 
 interface Props {
   teams: Team[]
+  leagueConfig: {
+    teamsPerLeague: number
+    totalWeeks: number
+  }
 }
 
 const props = defineProps<Props>()
@@ -23,14 +26,13 @@ const submit = () => {
 }
 
 const canSubmit = computed(() => {
-  return form.name.trim() && form.team_ids.length === LEAGUE_CONFIG.TEAMS_PER_LEAGUE
+  return form.name.trim() && form.team_ids.length === props.leagueConfig.teamsPerLeague
 })
 </script>
 
 <template>
   <div class="min-h-screen bg-gray-50">
     <div class="max-w-3xl mx-auto py-6 sm:px-6 lg:px-8">
-      <!-- Header -->
       <div class="px-4 py-6 sm:px-0">
         <div class="flex items-center space-x-4">
           <Link
@@ -44,16 +46,14 @@ const canSubmit = computed(() => {
         <div class="mt-4">
           <h1 class="text-3xl font-bold text-gray-900">Create New League</h1>
           <p class="mt-1 text-sm text-gray-500">
-            Select {{ LEAGUE_CONFIG.TEAMS_PER_LEAGUE }} teams to create a new league
+            Select {{ leagueConfig.teamsPerLeague }} teams to create a new league
           </p>
         </div>
       </div>
 
-      <!-- Form -->
       <div class="px-4 py-6 sm:px-0">
         <div class="bg-white shadow rounded-lg">
           <form @submit.prevent="submit" class="p-6 space-y-6">
-            <!-- League Name -->
             <div>
               <label for="name" class="block text-sm font-medium text-gray-700 mb-2">
                 League Name
@@ -72,12 +72,11 @@ const canSubmit = computed(() => {
               </div>
             </div>
 
-            <!-- Team Selection -->
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-3">
-                Select {{ LEAGUE_CONFIG.TEAMS_PER_LEAGUE }} Teams
+                Select {{ leagueConfig.teamsPerLeague }} Teams
                 <span class="text-gray-500">
-                  ({{ form.team_ids.length }}/{{ LEAGUE_CONFIG.TEAMS_PER_LEAGUE }})
+                  ({{ form.team_ids.length }}/{{ leagueConfig.teamsPerLeague }})
                 </span>
               </label>
               
@@ -93,7 +92,7 @@ const canSubmit = computed(() => {
                     :value="team.id"
                     type="checkbox"
                     class="sr-only"
-                    :disabled="form.team_ids.length >= LEAGUE_CONFIG.TEAMS_PER_LEAGUE && !form.team_ids.includes(team.id)"
+                    :disabled="form.team_ids.length >= leagueConfig.teamsPerLeague && !form.team_ids.includes(team.id)"
                   />
                   <label
                     :for="`team-${team.id}`"
@@ -101,7 +100,7 @@ const canSubmit = computed(() => {
                     :class="{
                       'border-blue-500 bg-blue-50': form.team_ids.includes(team.id),
                       'border-gray-300 hover:border-gray-400 bg-white': !form.team_ids.includes(team.id),
-                      'opacity-50 cursor-not-allowed': form.team_ids.length >= LEAGUE_CONFIG.TEAMS_PER_LEAGUE && !form.team_ids.includes(team.id)
+                      'opacity-50 cursor-not-allowed': form.team_ids.length >= leagueConfig.teamsPerLeague && !form.team_ids.includes(team.id)
                     }"
                   >
                     <div class="flex flex-col">
@@ -131,7 +130,6 @@ const canSubmit = computed(() => {
               </div>
             </div>
 
-            <!-- Submit Button -->
             <div class="flex justify-end space-x-3">
               <Link
                 :href="route('leagues.index')"
@@ -153,4 +151,4 @@ const canSubmit = computed(() => {
       </div>
     </div>
   </div>
-</template> 
+</template>
