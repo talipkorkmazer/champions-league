@@ -5,6 +5,8 @@ namespace Tests\Feature\Controllers;
 use Tests\TestCase;
 use App\Models\League;
 use App\Models\Team;
+use App\Models\LeagueMatch;
+use App\Models\Prediction;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class LeagueControllerTest extends TestCase
@@ -103,5 +105,105 @@ class LeagueControllerTest extends TestCase
         // Assert
         $response->assertRedirect();
         $this->assertEquals(0, $league->fresh()->current_week);
+    }
+
+    public function test_can_update_match_result()
+    {
+        $league = League::factory()->create(['current_week' => 2]);
+        $teams = Team::factory(2)->create();
+        $league->teams()->attach($teams->pluck('id'));
+
+        $match = LeagueMatch::factory()->create([
+            'league_id' => $league->id,
+            'home_team_id' => $teams[0]->id,
+            'away_team_id' => $teams[1]->id,
+            'home_score' => 1,
+            'away_score' => 0,
+            'is_played' => true,
+            'week' => 1
+        ]);
+
+        $response = $this->patch(route('leagues.matches.update', [
+            'league' => $league->id,
+            'leagueMatch' => $match->id
+        ]), [
+            'home_score' => 3,
+            'away_score' => 1
+        ]);
+
+        $response->assertRedirect();
+        $response->assertSessionHas('success');
+
+        $match->refresh();
+        $this->assertEquals(3, $match->home_score);
+        $this->assertEquals(1, $match->away_score);
+        $this->assertTrue(boolval($match->is_played));
+    }
+
+    public function test_cannot_update_match_with_invalid_scores()
+    {
+        $league = League::factory()->create();
+        $teams = Team::factory(2)->create();
+        $league->teams()->attach($teams->pluck('id'));
+
+        $match = LeagueMatch::factory()->create([
+            'league_id' => $league->id,
+            'home_team_id' => $teams[0]->id,
+            'away_team_id' => $teams[1]->id,
+            'home_score' => 1,
+            'away_score' => 0,
+            'is_played' => true
+        ]);
+
+        $response = $this->patch(route('leagues.matches.update', [
+            'league' => $league->id,
+            'leagueMatch' => $match->id
+        ]), [
+            'home_score' => -1,
+            'away_score' => 2
+        ]);
+
+        $response->assertSessionHasErrors(['home_score']);
+    }
+
+    public function test_updating_match_result_recalculates_predictions()
+    {
+        $league = League::factory()->create(['current_week' => 4]);
+        $teams = Team::factory(4)->create();
+        $league->teams()->attach($teams->pluck('id'));
+
+        // Create some played matches
+        LeagueMatch::factory()->create([
+            'league_id' => $league->id,
+            'home_team_id' => $teams[0]->id,
+            'away_team_id' => $teams[1]->id,
+            'home_score' => 2,
+            'away_score' => 1,
+            'is_played' => true,
+            'week' => 1
+        ]);
+
+        $match = LeagueMatch::factory()->create([
+            'league_id' => $league->id,
+            'home_team_id' => $teams[2]->id,
+            'away_team_id' => $teams[3]->id,
+            'home_score' => 1,
+            'away_score' => 1,
+            'is_played' => true,
+            'week' => 2
+        ]);
+
+        // Update the match result
+        $this->patch(route('leagues.matches.update', [
+            'league' => $league->id,
+            'leagueMatch' => $match->id
+        ]), [
+            'home_score' => 3,
+            'away_score' => 0
+        ]);
+
+        // Check that predictions were recalculated
+        $predictions = Prediction::where('league_id', $league->id)->get();
+        $this->assertGreaterThan(0, $predictions->count());
     }
 } 

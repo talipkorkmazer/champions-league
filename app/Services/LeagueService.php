@@ -147,4 +147,26 @@ class LeagueService
             totalWeeks: $this->leagueUtility->getTotalWeeks(),
         );
     }
+
+    /**
+     * Update match result and recalculate predictions
+     *
+     * @param LeagueMatch $match The match to update
+     * @param int $homeScore The new home team score
+     * @param int $awayScore The new away team score
+     * @return void
+     */
+    public function updateMatchResult(LeagueMatch $match, int $homeScore, int $awayScore): void
+    {
+        DB::transaction(callback: function () use ($match, $homeScore, $awayScore): void {
+            // Update the match result
+            $match->update([
+                'home_score' => $homeScore,
+                'away_score' => $awayScore,
+                'is_played' => true,
+            ]);
+
+            $this->predictionService->calculatePredictions($match->league);
+        });
+    }
 }

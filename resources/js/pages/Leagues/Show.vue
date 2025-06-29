@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { Link, router } from '@inertiajs/vue3'
-import { ArrowLeftIcon, PlayIcon, TrophyIcon, ChartBarIcon, ChevronDoubleRightIcon } from '@heroicons/vue/24/outline'
+import { ArrowLeftIcon, PlayIcon, TrophyIcon, ChartBarIcon, ChevronDoubleRightIcon, PencilIcon, CheckIcon, XMarkIcon } from '@heroicons/vue/24/outline'
 import Spinner from '@/components/ui/Spinner.vue'
-import type { League, Standing, LeagueUtility } from '@/types/league'
+import type { League, Standing, LeagueUtility, Match } from '@/types/league'
 import MainLayout from '@/layouts/MainLayout.vue'
 
 interface Props {
@@ -15,6 +15,8 @@ interface Props {
 const props = defineProps<Props>()
 
 const isSimulating = ref(false)
+const editingMatchId = ref<number | null>(null)
+const editingScores = ref<{ home_score: number; away_score: number }>({ home_score: 0, away_score: 0 })
 
 const showChampionshipColumn = computed(() => {
   return props.league.current_week >= 4;
@@ -53,6 +55,37 @@ const resetLeague = async () => {
     })
   } finally {
     isSimulating.value = false
+  }
+}
+
+const startEditingMatch = (match: Match) => {
+  editingMatchId.value = match.id
+  editingScores.value = {
+    home_score: match.home_score ?? 0,
+    away_score: match.away_score ?? 0
+  }
+}
+
+const cancelEditingMatch = () => {
+  editingMatchId.value = null
+  editingScores.value = { home_score: 0, away_score: 0 }
+}
+
+const saveMatchResult = async (match: Match) => {
+  if (isSimulating.value) return
+
+  try {
+    router.patch(route('leagues.matches.update', { league: props.league.id, leagueMatch: match.id }), {
+      home_score: editingScores.value.home_score,
+      away_score: editingScores.value.away_score
+    }, {
+      onSuccess: () => {
+        editingMatchId.value = null
+        editingScores.value = { home_score: 0, away_score: 0 }
+      }
+    })
+  } catch (error) {
+    console.error('Error updating match result:', error)
   }
 }
 </script>
@@ -245,8 +278,52 @@ const resetLeague = async () => {
                     <div class="text-sm font-medium text-gray-900 text-right flex-1">
                       {{ match.home_team.name }}
                     </div>
-                    <div class="text-lg font-bold text-gray-900">
-                      {{ match.home_score }} - {{ match.away_score }}
+
+
+                    <div v-if="editingMatchId === match.id" class="flex items-center space-x-2">
+                      <input
+                        v-model.number="editingScores.home_score"
+                        type="number"
+                        min="0"
+                        class="w-16 text-center border border-gray-300 rounded px-2 py-1 text-lg font-bold text-gray-900"
+                      />
+                      <span class="text-lg font-bold text-gray-900">-</span>
+                      <input
+                        v-model.number="editingScores.away_score"
+                        type="number"
+                        min="0"
+                        class="w-16 text-center border border-gray-300 rounded px-2 py-1 text-lg font-bold text-gray-900"
+                      />
+                      <div class="flex space-x-1 ml-2">
+                        <button
+                          @click="saveMatchResult(match)"
+                          class="p-1 text-green-600 hover:text-green-800"
+                          title="Save changes"
+                        >
+                          <CheckIcon class="h-4 w-4" />
+                        </button>
+                        <button
+                          @click="cancelEditingMatch"
+                          class="p-1 text-red-600 hover:text-red-800"
+                          title="Cancel editing"
+                        >
+                          <XMarkIcon class="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
+
+                    <div v-else class="flex items-center space-x-2">
+                      <div class="text-lg font-bold text-gray-900">
+                        {{ match.home_score ?? '-' }} - {{ match.away_score ?? '-' }}
+                      </div>
+                      <button
+                        v-if="match.is_played"
+                        @click="startEditingMatch(match)"
+                        class="p-1 text-gray-400 hover:text-gray-600 ml-2"
+                        title="Edit match result"
+                      >
+                        <PencilIcon class="h-4 w-4" />
+                      </button>
                     </div>
                     <div class="text-sm font-medium text-gray-900 text-left flex-1">
                       {{ match.away_team.name }}

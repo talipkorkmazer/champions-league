@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\League;
 use App\Models\Team;
+use App\Models\LeagueMatch;
 use App\Http\Requests\StoreLeagueRequest;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 use App\Services\LeagueService;
@@ -103,5 +105,25 @@ class LeagueController extends Controller
         $this->leagueService->resetLeague($league);
 
         return redirect()->back();
+    }
+
+    /**
+     * Update match result and recalculate standings
+     *
+     * @param League $league The league containing the match
+     * @param LeagueMatch $leagueMatch The match to update
+     * @param Request $request The request containing new scores
+     * @return RedirectResponse Redirect back to league show page
+     */
+    public function updateMatchResult(League $league, LeagueMatch $leagueMatch, Request $request): RedirectResponse
+    {
+        $request->validate([
+            'home_score' => 'required|integer|min:0',
+            'away_score' => 'required|integer|min:0',
+        ]);
+
+        $this->leagueService->updateMatchResult($leagueMatch, $request->home_score, $request->away_score);
+
+        return redirect()->back()->with('success', 'Match result updated successfully!');
     }
 }

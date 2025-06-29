@@ -15,6 +15,7 @@ Route::get('/leagues/create', [LeagueController::class, 'create'])->name('league
 Route::post('/leagues', [LeagueController::class, 'store'])->name('leagues.store');
 Route::get('/leagues/{league}', [LeagueController::class, 'show'])->name('leagues.show');
 Route::post('/leagues/{league}/reset', [LeagueController::class, 'reset'])->name('leagues.reset');
+Route::patch('/leagues/{league}/matches/{leagueMatch}', [LeagueController::class, 'updateMatchResult'])->name('leagues.matches.update');
 
 // Simulation routes
 Route::post('/simulation/{league}/week', [SimulationController::class, 'simulateWeek'])->name('simulation.run');
