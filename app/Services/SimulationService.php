@@ -67,9 +67,8 @@ class SimulationService implements SimulationServiceInterface
             }
 
             $league->update(['current_week' => $week]);
-
-            $this->predictionService->calculatePredictions($league);
         }
+        $this->predictionService->calculatePredictions($league);
     }
 
     /**

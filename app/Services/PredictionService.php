@@ -99,21 +99,14 @@ class PredictionService implements PredictionServiceInterface
         $totalWeeks = config('league.total_weeks');
 
         if ($league->current_week >= $totalWeeks) {
-            $sortedStandings = $standings;
-            $this->sortStandingsByTiebreakers($sortedStandings);
+            $sortedStandings = $this->standingService->sortStandings($standings);
 
             $topStanding = $sortedStandings[0];
-            $topTeams = array_filter($sortedStandings, function ($standing) use ($topStanding) {
-                return $standing['points'] === $topStanding['points'] &&
-                       $standing['goal_difference'] === $topStanding['goal_difference'] &&
-                       $standing['goals_for'] === $topStanding['goals_for'];
-            });
-            $topTeamIds = array_map(fn($standing) => $standing['team']->id, $topTeams);
 
             $predictions = [];
             foreach ($standings as $standing) {
                 $teamId = $standing['team']->id;
-                $predictions[$teamId] = in_array($teamId, $topTeamIds) ? 100.0 : 0.0;
+                $predictions[$teamId] = $teamId === $topStanding['team']->id ? 100.0 : 0.0;
             }
             foreach ($predictions as $teamId => $percentage) {
                 Prediction::updateOrCreate(
@@ -414,24 +407,5 @@ class PredictionService implements PredictionServiceInterface
         $strengthDifference = $opponentStrength - $teamStrength;
 
         return max(0, min(1, 0.5 + $strengthDifference));
-    }
-
-    /**
-     * Sort standings array by points, goal difference, and goals for (descending)
-     *
-     * @param array &$standings
-     * @return void
-     */
-    private function sortStandingsByTiebreakers(array &$standings): void
-    {
-        usort($standings, function ($a, $b) {
-            if ($a['points'] !== $b['points']) {
-                return $b['points'] - $a['points'];
-            }
-            if ($a['goal_difference'] !== $b['goal_difference']) {
-                return $b['goal_difference'] - $a['goal_difference'];
-            }
-            return $b['goals_for'] - $a['goals_for'];
-        });
     }
 }
