@@ -99,8 +99,9 @@ class PredictionService implements PredictionServiceInterface
         $totalWeeks = config('league.total_weeks');
 
         if ($league->current_week >= $totalWeeks) {
-            // Sort standings using all tiebreakers: points, goal difference, goals for
-            usort($standings, function ($a, $b) {
+            // Sort a copy of the standings using all tiebreakers: points, goal difference, goals for
+            $sortedStandings = $standings;
+            usort($sortedStandings, function ($a, $b) {
                 if ($a['points'] !== $b['points']) {
                     return $b['points'] - $a['points'];
                 }
@@ -110,20 +111,18 @@ class PredictionService implements PredictionServiceInterface
                 return $b['goals_for'] - $a['goals_for'];
             });
             // Find the top team(s) after tiebreakers
-            $topStanding = $standings[0];
-            $topTeams = array_filter($standings, function ($standing) use ($topStanding) {
+            $topStanding = $sortedStandings[0];
+            $topTeams = array_filter($sortedStandings, function ($standing) use ($topStanding) {
                 return $standing['points'] === $topStanding['points'] &&
                        $standing['goal_difference'] === $topStanding['goal_difference'] &&
                        $standing['goals_for'] === $topStanding['goals_for'];
             });
+            $topTeamIds = array_map(fn($standing) => $standing['team']->id, $topTeams);
+
             $predictions = [];
             foreach ($standings as $standing) {
                 $teamId = $standing['team']->id;
-                $predictions[$teamId] = 0.0;
-            }
-            foreach ($topTeams as $standing) {
-                $teamId = $standing['team']->id;
-                $predictions[$teamId] = 100.0;
+                $predictions[$teamId] = in_array($teamId, $topTeamIds) ? 100.0 : 0.0;
             }
             foreach ($predictions as $teamId => $percentage) {
                 Prediction::updateOrCreate(
