@@ -14,7 +14,7 @@ import { TrophyIcon } from '@heroicons/vue/24/outline';
           </div>
           <h1 class="text-3xl font-bold text-gray-900">Champions League Simulation</h1>
           <p class="mt-1 text-sm text-gray-500">
-            Welcome to the Insider Champions League simulation project
+            Welcome to the Champions League simulation project
           </p>
         </div>
       </div>
