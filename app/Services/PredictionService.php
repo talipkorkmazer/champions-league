@@ -102,11 +102,18 @@ class PredictionService implements PredictionServiceInterface
             $sortedStandings = $this->standingService->sortStandings($standings);
 
             $topStanding = $sortedStandings[0];
+            $topPoints = $topStanding['points'];
+            $topGoalDifference = $topStanding['goal_difference'];
+            $topGoalsFor = $topStanding['goals_for'];
 
             $predictions = [];
             foreach ($standings as $standing) {
                 $teamId = $standing['team']->id;
-                $predictions[$teamId] = $teamId === $topStanding['team']->id ? 100.0 : 0.0;
+                // Check if this team is tied for first place
+                $isTiedForFirst = $standing['points'] === $topPoints &&
+                                 $standing['goal_difference'] === $topGoalDifference &&
+                                 $standing['goals_for'] === $topGoalsFor;
+                $predictions[$teamId] = $isTiedForFirst ? 100.0 : 0.0;
             }
             foreach ($predictions as $teamId => $percentage) {
                 Prediction::updateOrCreate(

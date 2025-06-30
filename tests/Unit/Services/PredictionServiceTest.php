@@ -219,6 +219,7 @@ class PredictionServiceTest extends TestCase
     {
         $mock = Mockery::mock(StandingService::class);
         $mock->shouldReceive('calculateStandings')->andReturn($standings);
+        $mock->shouldReceive('sortStandings')->andReturn($standings);
         $this->app->instance(StandingService::class, $mock);
         return $mock;
     }
