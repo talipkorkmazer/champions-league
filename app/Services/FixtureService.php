@@ -25,13 +25,39 @@ class FixtureService implements FixtureServiceInterface
         shuffle($allPossibleMatches);
 
         $matchesToInsert = [];
-        for ($week = 1; $week <= config('league.total_weeks'); $week++) {
-            $matchesThisWeek = array_slice($allPossibleMatches, ($week - 1) * config('league.matches_per_week'), config('league.matches_per_week'));
+        $week = 1;
 
-            foreach ($matchesThisWeek as $matchData) {
-                $match = $this->createMatch($matchData['home_team_id'], $matchData['away_team_id'], $week);
-                $matchesToInsert[] = $this->prepareMatchForInsert($match, $league->id);
+        while (!empty($allPossibleMatches) && $week <= config('league.total_weeks')) {
+            $matchesThisWeek = [];
+            $teamsScheduledThisWeek = [];
+
+            foreach ($allPossibleMatches as $key => $matchData) {
+                $home = $matchData['home_team_id'];
+                $away = $matchData['away_team_id'];
+
+                if (!in_array($home, $teamsScheduledThisWeek) && !in_array($away, $teamsScheduledThisWeek)) {
+                    $match = $this->createMatch($home, $away, $week);
+                    $matchesThisWeek[] = $this->prepareMatchForInsert($match, $league->id);
+
+                    // Mark these teams as busy for this week
+                    $teamsScheduledThisWeek[] = $home;
+                    $teamsScheduledThisWeek[] = $away;
+
+                    // Remove match from pool
+                    unset($allPossibleMatches[$key]);
+                }
+
+                // Stop adding matches once we hit configured limit for the week
+                if (count($matchesThisWeek) >= config('league.matches_per_week')) {
+                    break;
+                }
             }
+
+            // Reindex array to avoid gaps after unset()
+            $allPossibleMatches = array_values($allPossibleMatches);
+
+            $matchesToInsert = array_merge($matchesToInsert, $matchesThisWeek);
+            $week++;
         }
 
         return $matchesToInsert;

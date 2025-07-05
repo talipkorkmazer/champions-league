@@ -170,4 +170,50 @@ class FixtureServiceTest extends TestCase
             $this->assertEquals($league->id, $fixture['league_id']);
         }
     }
+
+    public function test_one_team_can_only_have_one_match_in_same_week()
+    {
+        $league = League::factory()->create();
+        $teamIds = [1, 2, 3, 4];
+
+        $fixtures = $this->fixtureService->generateFixtures($league, $teamIds);
+
+        // Group fixtures by week
+        $fixturesByWeek = [];
+        foreach ($fixtures as $fixture) {
+            $week = $fixture['week'];
+            if (!isset($fixturesByWeek[$week])) {
+                $fixturesByWeek[$week] = [];
+            }
+            $fixturesByWeek[$week][] = $fixture;
+        }
+
+        // Check each week to ensure no team appears more than once
+        foreach ($fixturesByWeek as $week => $weekFixtures) {
+            $teamsInWeek = [];
+
+            foreach ($weekFixtures as $fixture) {
+                $homeTeamId = $fixture['home_team_id'];
+                $awayTeamId = $fixture['away_team_id'];
+
+                // Check if home team already has a match this week
+                $this->assertNotContains(
+                    $homeTeamId,
+                    $teamsInWeek,
+                    "Team $homeTeamId appears more than once in week $week"
+                );
+
+                // Check if away team already has a match this week
+                $this->assertNotContains(
+                    $awayTeamId,
+                    $teamsInWeek,
+                    "Team $awayTeamId appears more than once in week $week"
+                );
+
+                // Add both teams to the list for this week
+                $teamsInWeek[] = $homeTeamId;
+                $teamsInWeek[] = $awayTeamId;
+            }
+        }
+    }
 }
